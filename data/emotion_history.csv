@@ -1,0 +1,6 @@
+timestamp,filename,predicted_emotion,confidence,top_3_probabilities
+2025-06-18 10:44:43,Recording_2.wav,disgust,0.18,"{""disgust"": 0.18, ""sad"": 0.16, ""surprised"": 0.16}"
+2025-06-18 11:11:18,Recording.wav,calm,0.22,"{""calm"": 0.22, ""disgust"": 0.19, ""fearful"": 0.14}"
+2025-06-18 11:11:34,Recording.wav,calm,0.22,"{""calm"": 0.22, ""disgust"": 0.19, ""fearful"": 0.14}"
+2025-06-18 11:14:52,Recording.wav,calm,0.22,"{""calm"": 0.22, ""disgust"": 0.19, ""fearful"": 0.14}"
+2025-06-18 11:17:41,Recording.wav,calm,0.22,"{""calm"": 0.22, ""disgust"": 0.19, ""fearful"": 0.14}"
