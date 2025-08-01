@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>SentiSound - Audio Emotion Detection</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
+        .container { background: #fff; padding: 30px; border-radius: 8px; max-width: 500px; margin: auto; box-shadow: 0 2px 8px #ccc; }
+        h1 { text-align: center; }
+        .result, .error { margin-top: 20px; padding: 15px; border-radius: 5px; }
+        .result { background: #e6ffe6; border: 1px solid #b2ffb2; }
+        .error { background: #ffe6e6; border: 1px solid #ffb2b2; color: #a00; }
+        .prob-table { width: 100%; margin-top: 10px; border-collapse: collapse; }
+        .prob-table th, .prob-table td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+        .prob-table th { background: #f0f0f0; }
+        .viz-img { margin-top: 15px; max-width: 100%; border-radius: 4px; }
+        .pdf-link { display: inline-block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>SentiSound</h1>
+    <form action="/result" method="post" enctype="multipart/form-data">
+        <label for="file">Upload Audio File (.wav, .mp3):</label><br>
+        <input type="file" name="file" id="file" accept="audio/*" required><br><br>
+        <button type="submit">Analyze Emotion</button>
+    </form>
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+    {% if result %}
+        <div class="result">
+            <strong>Predicted Emotion:</strong> {{ result.emotion|capitalize }}<br>
+            <strong>Probabilities:</strong>
+            <table class="prob-table">
+                <tr><th>Emotion</th><th>Probability</th></tr>
+                {% for emo, prob in result.probabilities.items() %}
+                <tr><td>{{ emo|capitalize }}</td><td>{{ '%.2f'|format(prob * 100) }}%</td></tr>
+                {% endfor %}
+            </table>
+            {% if result.visualization %}
+                <img src="/static/{{ result.visualization }}" class="viz-img" alt="Visualization">
+            {% endif %}
+            {% if result.pdf_url %}
+                <div><a class="pdf-link" href="{{ result.pdf_url }}">Download PDF Report</a></div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+</body>
+</html> 
