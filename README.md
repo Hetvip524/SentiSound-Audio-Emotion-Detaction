@@ -1,4 +1,4 @@
-# 🎤 SentiSound: Advanced Audio Emotion Recognition System
+# 🎤 SentiSound: Audio Emotion Recognition System
 
 ## 📋 Executive Summary
 
@@ -211,76 +211,6 @@ Response:
 
 ---
 
-## 👥 Work Distribution & Team Collaboration
-
-### **Person 1: Machine Learning & Data Engineering Specialist**
-
-#### **Responsibilities:**
-1. **Data Collection & Preprocessing**
-   - RAVDESS dataset acquisition and validation
-   - Audio file preprocessing and quality assurance
-   - Emotion label mapping and standardization
-
-2. **Feature Engineering**
-   - MFCC feature extraction implementation
-   - Feature analysis and optimization
-   - Dimensionality reduction and selection
-
-3. **Model Development**
-   - Algorithm selection and implementation
-   - Hyperparameter tuning and optimization
-   - Cross-validation and performance evaluation
-
-4. **Model Deployment**
-   - Model serialization and versioning
-   - Training pipeline automation
-   - Performance documentation
-
-#### **Deliverables:**
-- `train_model.py` - Complete training pipeline
-- `models/emotion_model.pkl` - Trained Random Forest model
-- `models/scaler.pkl` - Feature normalization scaler
-- Model performance documentation
-- Feature engineering analysis report
-
-### **Person 2: Backend Development & API Specialist**
-
-#### **Responsibilities:**
-1. **System Architecture**
-   - Flask application design and implementation
-   - API endpoint development and optimization
-   - Database design and data management
-
-2. **Core Functionality**
-   - File upload and processing system
-   - Real-time audio analysis implementation
-   - Error handling and validation
-
-3. **Advanced Features**
-   - PDF report generation system
-   - Audio visualization creation
-   - History tracking and management
-
-4. **User Interface**
-   - Basic web interface development
-   - API documentation and testing
-   - Deployment and maintenance
-
-#### **Deliverables:**
-- `app.py` - Complete Flask backend application
-- `templates/index.html` - Web interface
-- `requirements.txt` - Project dependencies
-- API documentation and usage examples
-- System architecture documentation
-
-### **Collaboration Points:**
-- **Integration Testing**: Joint validation of ML-backend integration
-- **Performance Optimization**: Collaborative system tuning
-- **Documentation**: Shared technical documentation
-- **Presentation**: Joint project demonstration
-
----
-
 ## 🚀 Installation & Setup
 
 ### **Prerequisites**
@@ -457,14 +387,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Issues**: GitHub issues for bug reports and feature requests
 - **Contributions**: Pull requests welcome for improvements
 
-### **Project Information**
-- **Version**: 1.0.0
-- **Last Updated**: January 2024
-- **Status**: Production Ready
-- **Maintainers**: Development Team
-
 ---
 
 **SentiSound** represents a comprehensive implementation of modern audio processing and machine learning techniques, demonstrating advanced software engineering principles and practical application of artificial intelligence in emotion recognition systems.
-
-*Built with ❤️ for advancing audio emotion recognition technology*
