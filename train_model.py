@@ -5,9 +5,12 @@ import librosa
 import joblib
 import kagglehub
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.svm import SVC
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.model_selection import train_test_split, StratifiedKFold, GridSearchCV
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import classification_report
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import classification_report, accuracy_score
 
 def download_dataset():
     """Download RAVDESS dataset using kagglehub."""
@@ -73,7 +76,7 @@ def prepare_dataset(data_path):
     return np.array(features), np.array(labels)
 
 def train_model():
-    """Train and save the emotion detection model."""
+    """Train and save the emotion detection model with model selection."""
     # Download dataset if not already present
     data_path = download_dataset()
     if data_path is None:
@@ -88,28 +91,50 @@ def train_model():
         return
     
     # Split the dataset
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-    
-    # Scale the features
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-    
-    # Train Random Forest classifier
-    print("Training Random Forest classifier...")
-    rf_classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-    rf_classifier.fit(X_train_scaled, y_train)
-    
-    # Evaluate the model
-    y_pred = rf_classifier.predict(X_test_scaled)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+
+    # Build a pipeline and search best estimator
+    pipe = Pipeline([
+        ('scaler', StandardScaler()),
+        ('clf', RandomForestClassifier(random_state=42))
+    ])
+    param_grid = [
+        {
+            'clf': [RandomForestClassifier(random_state=42)],
+            'clf__n_estimators': [200, 400],
+            'clf__max_depth': [None, 20, 40]
+        },
+        {
+            'clf': [SVC(probability=True, random_state=42)],
+            'clf__C': [0.5, 1, 2],
+            'clf__kernel': ['rbf', 'linear'],
+            'clf__gamma': ['scale', 'auto']
+        },
+        {
+            'clf': [KNeighborsClassifier()],
+            'clf__n_neighbors': [3, 5, 9]
+        }
+    ]
+    cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+    search = GridSearchCV(pipe, param_grid, cv=cv, n_jobs=-1, scoring='accuracy', refit=True)
+    print("Searching best model with cross-validation...")
+    search.fit(X_train, y_train)
+    best_model = search.best_estimator_
+    print('Best params:', search.best_params_)
+
+    # Evaluate on hold-out test
+    y_pred = best_model.predict(X_test)
     print("\nModel Evaluation:")
+    print('Accuracy:', accuracy_score(y_test, y_pred))
     print(classification_report(y_test, y_pred))
-    
-    # Save the model and scaler
+
+    # Save selected classifier and fitted scaler separately to preserve current load pattern
+    fitted_scaler = best_model.named_steps['scaler']
+    fitted_clf = best_model.named_steps['clf']
     print("\nSaving model and scaler...")
     os.makedirs('models', exist_ok=True)
-    joblib.dump(rf_classifier, 'models/emotion_model.pkl')
-    joblib.dump(scaler, 'models/scaler.pkl')
+    joblib.dump(fitted_clf, 'models/emotion_model.pkl')
+    joblib.dump(fitted_scaler, 'models/scaler.pkl')
     print("Model and scaler saved successfully!")
 
 if __name__ == "__main__":
