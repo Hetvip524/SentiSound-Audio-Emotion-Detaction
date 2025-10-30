@@ -1,150 +1,98 @@
-# 🎤 SentiSound: Audio Emotion Recognition System
+# 🎤 SentiSound - Audio Emotion Detection Backend API
 
-## 📋 Executive Summary
-
-**SentiSound** is a sophisticated Flask-based backend API system designed for real-time audio emotion recognition using machine learning. This project demonstrates advanced implementation of audio processing, feature engineering, and machine learning classification to detect seven distinct emotions from audio input. The system provides comprehensive backend services including prediction history management, automated PDF report generation, and professional audio visualizations.
+A robust Flask-based backend API for audio emotion recognition using machine learning. This backend provides endpoints for audio upload, emotion prediction, prediction history, PDF report generation, real-time (base64) prediction, and audio visualizations. No frontend/UI/UX code is included—ideal for integration with any client or for backend-focused projects.
 
 ---
 
-## 🎯 Project Overview
+## 🚀 Features
 
-### **Core Objective**
-Develop a robust, scalable backend system capable of analyzing audio files and accurately predicting emotional states using state-of-the-art machine learning techniques.
-
-### **Technical Innovation**
-- **Advanced Audio Processing**: Implements MFCC (Mel-frequency Cepstral Coefficients) feature extraction for optimal emotion recognition
-- **Machine Learning Pipeline**: Utilizes Random Forest classification with comprehensive feature engineering
-- **Real-time Processing**: Supports both file upload and base64-encoded audio for immediate analysis
-- **Professional Reporting**: Automated PDF report generation with detailed analysis and visualizations
-
-### **Supported Emotions**
-- 😄 **Happy** - Positive, joyful emotional states
-- 😢 **Sad** - Melancholic, sorrowful expressions
-- 😠 **Angry** - Aggressive, frustrated emotions
-- 😮 **Surprised** - Shocked, astonished reactions
-- 😨 **Fear** - Anxious, frightened states
-- 🤢 **Disgust** - Repulsed, averse emotions
-- 😐 **Neutral** - Balanced, unemotional states
+1. **Audio Upload & Emotion Prediction API**  
+   - Upload audio files (.wav, .mp3, .m4a) and receive predicted emotion and probabilities.
+2. **Prediction History API**  
+   - Stores and retrieves a history of predictions (timestamp, filename, emotion, confidence, top 3 probabilities).
+3. **PDF Report Generation API**  
+   - Generates downloadable PDF reports for each prediction (emotion, probabilities, timestamp).
+4. **Real-time Recording API**  
+   - Accepts base64-encoded audio for real-time emotion prediction (testable via Postman/curl).
+5. **Visualization Generation**  
+   - Generates and saves waveform/spectrogram/MFCC images for each audio file.
+6. **Model Info & Health Endpoints**  
+   - `/health` for API health checks, `/models/info` for model metadata.
 
 ---
 
-## 🏗️ System Architecture
+## 👥 Work Distribution (for Two-Person Team)
 
-### **Technology Stack**
-```
-Backend Framework:    Flask (Python)
-Machine Learning:     scikit-learn, librosa
-Data Processing:      numpy, pandas
-Visualization:        matplotlib, seaborn
-Documentation:        ReportLab (PDF generation)
-API Communication:    RESTful endpoints with JSON
-Data Storage:         CSV-based persistence
-```
+- **Person 1: Model & Feature Engineering**
+  - Data collection and preprocessing (RAVDESS dataset).
+  - Feature extraction (MFCCs).
+  - Model selection, training, evaluation (Random Forest).
+  - Saving/loading model and scaler.
+  - Writing the training script and documentation.
 
-### **Core Components**
-
-#### **1. Audio Processing Engine**
-- **Feature Extraction**: 40-dimensional MFCC coefficients
-- **Audio Support**: WAV, MP3, M4A formats
-- **Processing Pipeline**: librosa-based audio analysis
-- **Quality Assurance**: Automatic resampling and normalization
-
-#### **2. Machine Learning Module**
-- **Algorithm**: Random Forest Classifier (100 estimators)
-- **Dataset**: RAVDESS (Ryerson Audio-Visual Database)
-- **Feature Engineering**: StandardScaler normalization
-- **Model Persistence**: Joblib serialization
-
-#### **3. API Management System**
-- **RESTful Design**: Standardized HTTP endpoints
-- **Error Handling**: Comprehensive exception management
-- **CORS Support**: Cross-origin resource sharing
-- **Response Format**: Structured JSON with metadata
-
-#### **4. Data Management Layer**
-- **History Tracking**: CSV-based prediction storage
-- **File Management**: Organized upload and visualization storage
-- **Report Generation**: Professional PDF documentation
-- **Data Validation**: Input sanitization and verification
+- **Person 2: Backend API & Data Management**
+  - Implementing Flask API endpoints for upload, prediction, history, and PDF report.
+  - File handling and validation.
+  - Storing and retrieving prediction history.
+  - Generating PDF reports and visualizations.
+  - Writing API documentation and usage examples.
 
 ---
 
-## 🔧 Technical Implementation
+## 📁 Project Structure
 
-### **Machine Learning Pipeline**
-
-#### **Feature Extraction Process**
-```python
-def extract_features(file_path):
-    # Load audio with optimal resampling
-    audio, sample_rate = librosa.load(file_path, res_type='kaiser_fast')
-    
-    # Extract 40 MFCC coefficients
-    mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
-    
-    # Aggregate features across time dimension
-    mfccs_mean = np.mean(mfccs.T, axis=0)
-    
-    return mfccs_mean, audio, sample_rate
+```
+Audio_Emo_Backend/
+├── app.py                    # Main Flask backend API
+├── requirements.txt          # Python dependencies
+├── README.md                 # Project documentation
+├── data/
+│   └── emotion_history.csv   # Emotion analysis history
+├── models/
+│   ├── emotion_model.pkl     # Trained ML model
+│   └── scaler.pkl            # Feature scaler
+├── static/
+│   ├── audio_uploads/        # Uploaded audio files
+│   └── visualizations/       # Generated audio visualizations
+└── train_model.py            # Model training script
 ```
 
-#### **Model Training Architecture**
-```python
-# Feature preprocessing
-scaler = StandardScaler()
-X_train_scaled = scaler.fit_transform(X_train)
+---
 
-# Random Forest classification
-rf_classifier = RandomForestClassifier(
-    n_estimators=100,
-    random_state=42,
-    max_depth=None,
-    min_samples_split=2
-)
-rf_classifier.fit(X_train_scaled, y_train)
+## 🔧 API Documentation
+
+### 1. Audio Prediction Endpoint
 ```
-
-### **API Endpoint Specifications**
-
-#### **1. Audio Prediction Endpoint**
-```http
 POST /predict
 Content-Type: multipart/form-data
-
-Request Body:
-- file: Audio file (WAV, MP3, M4A)
-
-Response:
+file: <audio file>
+```
+**Response:**
+```
 {
   "emotion": "happy",
-  "probabilities": {
-    "happy": 0.85,
-    "sad": 0.10,
-    "angry": 0.05
-  },
+  "probabilities": {"happy": 0.85, "sad": 0.10, "angry": 0.05},
   "audio_file": "uploaded_file.wav",
   "visualization": "visualizations/uploaded_file_analysis.png"
 }
 ```
 
-#### **2. Real-time Audio Processing**
-```http
+### 2. Real-time (Base64) Prediction Endpoint
+```
 POST /record
 Content-Type: application/json
-
-Request Body:
 {
   "audio": "data:audio/wav;base64,UklGR..."
 }
-
-Response: Identical to /predict endpoint
 ```
+**Response:** Same as above.
 
-#### **3. Prediction History Management**
-```http
+### 3. Prediction History
+```
 GET /history
-
-Response:
+```
+**Response:**
+```
 {
   "history": [
     {
@@ -158,28 +106,21 @@ Response:
 }
 ```
 
-#### **4. Professional Report Generation**
-```http
+### 4. PDF Report Download
+```
 GET /download-report/{filename}
-
-Response: PDF file download with comprehensive analysis
 ```
+**Response:** PDF file download
 
-#### **5. System Health Monitoring**
-```http
-GET /health
-
-Response: {"status": "ok"}
+### 5. Model Info
 ```
-
-#### **6. Model Information**
-```http
 GET /models/info
-
-Response:
+```
+**Response:**
+```
 {
   "model_type": "RandomForestClassifier",
-  "classes": ["happy", "sad", "angry", "surprised", "fear", "disgust", "neutral"],
+  "classes": ["happy", "sad", ...],
   "n_features": 40,
   "trained_on": "RAVDESS",
   "feature_type": "MFCC (mean, 40 dims)",
@@ -187,206 +128,82 @@ Response:
 }
 ```
 
----
-
-## 📊 Performance Metrics & Evaluation
-
-### **Model Performance**
-- **Accuracy**: 78.5% on test dataset
-- **Precision**: 0.82 (weighted average)
-- **Recall**: 0.79 (weighted average)
-- **F1-Score**: 0.80 (weighted average)
-
-### **System Performance**
-- **Response Time**: < 3 seconds for typical audio files
-- **File Size Support**: Up to 50MB audio files
-- **Concurrent Processing**: Flask handles multiple simultaneous requests
-- **Memory Efficiency**: Optimized audio processing pipeline
-
-### **Quality Assurance**
-- **Error Handling**: Comprehensive exception management
-- **Input Validation**: File type and format verification
-- **Data Integrity**: Secure file handling and storage
-- **Performance Monitoring**: Health check endpoints
+### 6. Health Check
+```
+GET /health
+```
+**Response:** `{ "status": "ok" }`
 
 ---
 
-## 🚀 Installation & Setup
+## 🧪 Example API Calls
 
-### **Prerequisites**
-```bash
-Python 3.8+
-pip package manager
-Git version control
+**Audio Prediction (curl):**
+```
+curl -X POST -F "file=@audio.wav" http://localhost:5000/predict
 ```
 
-### **Installation Steps**
+**Real-time (Base64) Prediction (curl):**
+```
+curl -X POST -H "Content-Type: application/json" -d '{"audio": "data:audio/wav;base64,<BASE64_STRING>"}' http://localhost:5000/record
+```
 
-1. **Clone Repository**
-   ```bash
-   git clone <repository-url>
-   cd Audio_Emo_Backend
-   ```
-
-2. **Install Dependencies**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. **Verify Model Files**
-   ```bash
-   # Ensure model files exist
-   ls models/
-   # Should show: emotion_model.pkl, scaler.pkl
-   ```
-
-4. **Run Application**
-   ```bash
-   python app.py
-   ```
-
-5. **Access Application**
-   ```
-   Web Interface: http://localhost:5000
-   API Endpoints: http://localhost:5000/health
-   ```
-
-### **Testing the System**
-
-#### **Web Interface Testing**
-1. Navigate to `http://localhost:5000`
-2. Upload an audio file (.wav, .mp3, .m4a)
-3. Click "Analyze Emotion"
-4. Review results, visualization, and download PDF report
-
-#### **API Testing (curl)**
-```bash
-# Health check
-curl http://localhost:5000/health
-
-# Model information
-curl http://localhost:5000/models/info
-
-# Audio prediction
-curl -X POST -F "file=@audio.wav" http://localhost:5000/predict
-
-# Get prediction history
+**Get History:**
+```
 curl http://localhost:5000/history
 ```
 
----
-
-## 🔬 Technical Deep Dive
-
-### **Audio Processing Methodology**
-
-#### **MFCC Feature Extraction**
-The system employs Mel-frequency Cepstral Coefficients (MFCC) as the primary feature extraction method:
-
-1. **Preprocessing**: Audio resampling to 22050 Hz for consistency
-2. **Windowing**: Short-time Fourier transform with Hamming window
-3. **Mel Filtering**: Conversion to mel-scale frequency domain
-4. **Logarithmic Compression**: Log-magnitude spectrum computation
-5. **Discrete Cosine Transform**: Dimensionality reduction to 40 coefficients
-6. **Temporal Aggregation**: Mean computation across time frames
-
-#### **Why MFCC for Emotion Recognition?**
-- **Spectral Representation**: Captures frequency characteristics relevant to emotion
-- **Dimensionality Reduction**: Efficient feature representation
-- **Noise Robustness**: Resilient to background noise and recording variations
-- **Standard Practice**: Widely adopted in speech and audio processing
-
-### **Machine Learning Architecture**
-
-#### **Random Forest Classifier**
-```python
-RandomForestClassifier(
-    n_estimators=100,      # Number of decision trees
-    max_depth=None,        # Unlimited tree depth
-    min_samples_split=2,   # Minimum samples for split
-    random_state=42,       # Reproducible results
-    n_jobs=-1             # Parallel processing
-)
+**Download PDF Report:**
+```
+curl -O http://localhost:5000/download-report/your_audio.wav
 ```
 
-#### **Advantages of Random Forest:**
-- **Ensemble Learning**: Combines multiple decision trees for robust predictions
-- **Feature Importance**: Provides insights into feature relevance
-- **Overfitting Resistance**: Built-in regularization through ensemble averaging
-- **Non-linear Relationships**: Captures complex feature interactions
+**Model Info:**
+```
+curl http://localhost:5000/models/info
+```
 
-### **System Optimization**
-
-#### **Performance Enhancements**
-1. **Caching**: Visualization and PDF caching for repeated requests
-2. **Async Processing**: Non-blocking audio analysis
-3. **Memory Management**: Efficient audio file handling
-4. **Error Recovery**: Graceful handling of processing failures
-
-#### **Scalability Considerations**
-- **Horizontal Scaling**: Stateless API design for load balancing
-- **Database Integration**: Ready for PostgreSQL/MySQL migration
-- **Cloud Deployment**: Compatible with AWS, Google Cloud, Azure
-- **Microservices**: Modular architecture for service decomposition
+**Health Check:**
+```
+curl http://localhost:5000/health
+```
 
 ---
 
-## 📈 Future Enhancements
+## 🛠️ How to Run
 
-### **Short-term Improvements**
-- **Deep Learning Integration**: CNN/LSTM models for improved accuracy
-- **Real-time Streaming**: WebSocket support for live audio analysis
-- **Multi-language Support**: Cross-lingual emotion detection
-- **User Authentication**: JWT-based user management system
-
-### **Long-term Roadmap**
-- **Cloud Deployment**: AWS/GCP production deployment
-- **Mobile Integration**: iOS/Android SDK development
-- **Advanced Analytics**: Emotion trend analysis and reporting
-- **API Marketplace**: Public API for third-party integrations
+1. **Install dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Run the backend API:**
+   ```bash
+   python app.py
+   ```
+3. **Test endpoints using curl/Postman.**
 
 ---
 
-## 📚 Technical References
-
-### **Research Papers**
-- "Emotion Recognition from Speech: A Review" - IEEE Transactions on Audio, Speech, and Language Processing
-- "MFCC and its applications in speaker recognition" - International Journal of Engineering Research
-- "Random Forest for Audio Classification" - Journal of Machine Learning Research
-
-### **Libraries & Frameworks**
-- **librosa**: Audio and music signal processing
-- **scikit-learn**: Machine learning algorithms
-- **Flask**: Web framework for Python
-- **matplotlib**: Data visualization
-- **ReportLab**: PDF generation
-
-### **Datasets**
-- **RAVDESS**: Ryerson Audio-Visual Database of Emotional Speech and Song
-- **CREMA-D**: Crowd-sourced Emotional Multimodal Actors Dataset
-- **SAVEE**: Surrey Audio-Visual Expressed Emotion Database
+## 📈 Model & Algorithm
+- **Feature Extraction:** MFCC (Mel-frequency cepstral coefficients, mean, 40 dims)
+- **Model:** Random Forest (scikit-learn)
+- **Preprocessing:** StandardScaler
+- **Dataset:** RAVDESS
+- **Alternatives:** SVM, Neural Networks (can be swapped in train_model.py)
 
 ---
 
-## 📄 License & Acknowledgments
-
-### **License**
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### **Acknowledgments**
-- **RAVDESS Dataset**: Ryerson University for providing the emotion dataset
-- **Open Source Community**: Contributors to librosa, scikit-learn, and Flask
-- **Academic Support**: Faculty and mentors for technical guidance
+## 🧩 Extending the Backend
+- Add new endpoints for analytics, user management, or batch processing.
+- Swap in new models by retraining and updating the .pkl files.
+- Integrate with any frontend or mobile app via REST API.
+- Add authentication (Flask-JWT, OAuth) for production use.
 
 ---
 
-## 📞 Support & Contact
-
-### **Technical Support**
-- **Documentation**: Comprehensive API documentation included
-- **Issues**: GitHub issues for bug reports and feature requests
-- **Contributions**: Pull requests welcome for improvements
+## 📄 License
+MIT License. See LICENSE file.
 
 ---
 
-**SentiSound** represents a comprehensive implementation of modern audio processing and machine learning techniques, demonstrating advanced software engineering principles and practical application of artificial intelligence in emotion recognition systems.
+**Made for backend-focused audio emotion recognition projects.**
