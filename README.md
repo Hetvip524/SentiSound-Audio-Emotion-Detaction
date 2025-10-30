@@ -1,209 +1,156 @@
-# 🎤 SentiSound - Audio Emotion Detection Backend API
+# 🎤  SentiSound - Audio Emotion Recognition System
 
-A robust Flask-based backend API for audio emotion recognition using machine learning. This backend provides endpoints for audio upload, emotion prediction, prediction history, PDF report generation, real-time (base64) prediction, and audio visualizations. No frontend/UI/UX code is included—ideal for integration with any client or for backend-focused projects.
+## 📋 Project Explanation
 
----
+SentiSound is an audio emotion detection application that analyzes speech recordings to identify the emotional state of the speaker. The project aims to provide accurate emotion recognition from audio inputs, making it useful for applications in mental health monitoring, customer service analysis, and human-computer interaction research.
 
-## 🚀 Features
+The application allows users to upload audio files or record audio directly through the interface. It then processes this audio to extract relevant features and predicts the emotional content using machine learning techniques. Results are presented with visualizations and detailed probability breakdowns for each emotion category.
 
-1. **Audio Upload & Emotion Prediction API**  
+## 🎯  Project Overview
+
+### **Core Objective**
+Develop a robust, scalable backend system capable of analyzing audio files and accurately predicting emotional states using state-of-the-art machine learning techniques.
+
+### **Technical Innovation**
+- **Advanced Audio Processing**: Implements MFCC (Mel-frequency Cepstral Coefficients) feature extraction for optimal emotion recognition
+- **Machine Learning Pipeline**: Utilizes Random Forest classification with comprehensive feature engineering
+- **Real-time Processing**: Supports both file upload and base64-encoded audio for immediate analysis
+- **Professional Reporting**: Automated PDF report generation with detailed analysis and visualizations
+
+### **Supported Emotions**
+- 😄 **Happy** - Positive, joyful emotional states
+- 😢 **Sad** - Melancholic, sorrowful expressions
+- 😠 **Angry** - Aggressive, frustrated emotions
+- 😮 **Surprised** - Shocked, astonished reactions
+- 😨 **Fear** - Anxious, frightened states
+- 🤢 **Disgust** - Repulsed, averse emotions
+- 😐 **Neutral** - Balanced, unemotional states
+
+## 🔧 Technologies Used
+
+SentiSound is built using the following technologies:
+
+1. **Flask**: A lightweight Python web framework that serves as the backbone of the application, handling routing, request processing, and response generation.
+
+2. **SQLAlchemy**: An ORM (Object-Relational Mapping) library used for database interactions, storing user accounts and analysis history.
+
+3. **Librosa**: A Python library for audio analysis that enables feature extraction from audio files, including MFCCs (Mel-frequency cepstral coefficients).
+
+4. **Scikit-learn**: A machine learning library that provides the Random Forest classifier used for emotion prediction.
+
+5. **Matplotlib & Seaborn**: Visualization libraries used to generate waveforms, spectrograms, and other audio visualizations.
+
+6. **ReportLab**: A PDF generation library used to create downloadable reports of emotion analysis results.
+
+7. **Flask-Login & Authlib**: Authentication libraries that handle user account management and Google OAuth integration.
+
+## 🔬 Features
+
+1. **Audio Upload & Emotion Prediction**
    - Upload audio files (.wav, .mp3, .m4a) and receive predicted emotion and probabilities.
-2. **Prediction History API**  
-   - Stores and retrieves a history of predictions (timestamp, filename, emotion, confidence, top 3 probabilities).
-3. **PDF Report Generation API**  
-   - Generates downloadable PDF reports for each prediction (emotion, probabilities, timestamp).
-4. **Real-time Recording API**  
-   - Accepts base64-encoded audio for real-time emotion prediction (testable via Postman/curl).
-5. **Visualization Generation**  
-   - Generates and saves waveform/spectrogram/MFCC images for each audio file.
-6. **Model Info & Health Endpoints**  
-   - `/health` for API health checks, `/models/info` for model metadata.
+2. **Advanced Preprocessing for Accuracy**
+   - Spectral-gating noise reduction, silence trim, voice-activity detection (VAD) to keep only voiced segments, optional pre‑emphasis.
+3. **Unified Navy Theme**
+   - Consistent blue palette across Analyze, Home, Account, Login/Signup, Landing.
+4. **Working History**
+   - Saves every analysis with timestamp, filename, emotion, confidence, and all probabilities; viewable in the UI.
+5. **Personalized Suggestions**
+   - Clickable music/activity/meditation links with suggested durations; book recommendations per emotion.
+6. **PDF Reports**
+   - Download comprehensive reports including visuals and probabilities.
+7. **Real‑time Recording**
+   - Accepts base64 audio; analyzes in one request.
+8. **Visualizations & Metadata**
+   - Waveform, spectrogram, MFCC charts; `/models/info` for model metadata; `/health` for health checks.
 
----
+## 🏗️ How the Technologies Work Together
 
-## 👥 Work Distribution (for Two-Person Team)
+1. **Audio Processing Pipeline**:
+   - Audio files are uploaded or recorded through the Flask web interface
+   - Librosa processes the audio to extract MFCC features
+   - Spectral-gating noise reduction and voice-activity detection (VAD) clean the audio
+   - Features are scaled using StandardScaler from scikit-learn
+   - The trained Random Forest model predicts emotion probabilities
 
-- **Person 1: Model & Feature Engineering**
-  - Data collection and preprocessing (RAVDESS dataset).
-  - Feature extraction (MFCCs).
-  - Model selection, training, evaluation (Random Forest).
-  - Saving/loading model and scaler.
-  - Writing the training script and documentation.
+2. **User Interface Flow**:
+   - Flask routes handle different pages (home, login, analysis, history)
+   - Templates render the HTML interface with dynamic content
+   - CSS styling provides a consistent navy blue theme
+   - JavaScript handles real-time recording and form submissions
 
-- **Person 2: Backend API & Data Management**
-  - Implementing Flask API endpoints for upload, prediction, history, and PDF report.
-  - File handling and validation.
-  - Storing and retrieving prediction history.
-  - Generating PDF reports and visualizations.
-  - Writing API documentation and usage examples.
+3. **Data Storage**:
+   - SQLite database (app.db) stores user accounts and analysis history
+   - File system stores uploaded audio files and generated visualizations
 
----
+##  📊 Model Details and Accuracy
 
-## 📁 Project Structure
+SentiSound uses a **Random Forest Classifier** for emotion detection, which was selected after comparative testing against SVM and Neural Network alternatives.
 
-```
-Audio_Emo_Backend/
-├── app.py                    # Main Flask backend API
-├── requirements.txt          # Python dependencies
-├── README.md                 # Project documentation
-├── data/
-│   └── emotion_history.csv   # Emotion analysis history
-├── models/
-│   ├── emotion_model.pkl     # Trained ML model
-│   └── scaler.pkl            # Feature scaler
-├── static/
-│   ├── audio_uploads/        # Uploaded audio files
-│   └── visualizations/       # Generated audio visualizations
-└── train_model.py            # Model training script
-```
+**Feature Extraction**:
+- 40-dimensional Mel-frequency cepstral coefficients (MFCCs)
+- Features are standardized using scikit-learn's StandardScaler
 
----
+**Training Dataset**:
+- RAVDESS (Ryerson Audio-Visual Database of Emotional Speech and Song)
+- Contains professional actors performing speech with different emotional expressions
 
-## 🔧 API Documentation
+**Preprocessing Steps**:
+- Spectral-gating noise reduction
+- Silence trimming
+- Voice-activity detection (VAD)
+- Pre-emphasis filtering
 
-### 1. Audio Prediction Endpoint
-```
-POST /predict
-Content-Type: multipart/form-data
-file: <audio file>
-```
-**Response:**
-```
-{
-  "emotion": "happy",
-  "probabilities": {"happy": 0.85, "sad": 0.10, "angry": 0.05},
-  "audio_file": "uploaded_file.wav",
-  "visualization": "visualizations/uploaded_file_analysis.png"
-}
-```
+**Model Performance**:
+- Cross-validated accuracy: ~75% on the RAVDESS dataset
+- Emotions detected: Happy, Sad, Angry, Fearful, Disgusted, Neutral, Surprised
+- Confusion most commonly occurs between similar emotions (e.g., angry/disgusted)
 
-### 2. Real-time (Base64) Prediction Endpoint
-```
-POST /record
-Content-Type: application/json
-{
-  "audio": "data:audio/wav;base64,UklGR..."
-}
-```
-**Response:** Same as above.
+The model can be retrained using the provided training scripts:
+- `train_model.py`: Basic training with cross-validation
+- `train_model_enhanced.py`: Enhanced training with additional feature engineering
 
-### 3. Prediction History
-```
-GET /history
-```
-**Response:**
-```
-{
-  "history": [
-    {
-      "timestamp": "2024-01-15 14:30:25",
-      "filename": "recording_20240115_143025.wav",
-      "predicted_emotion": "happy",
-      "confidence": 0.85,
-      "top_3_probabilities": "{\"happy\": 0.85, \"sad\": 0.10, \"angry\": 0.05}"
-    }
-  ]
-}
-```
+## 🚀 How to Run the Application
 
-### 4. PDF Report Download
-```
-GET /download-report/{filename}
-```
-**Response:** PDF file download
+### Prerequisites
+- Python 3.10 or higher
+- ffmpeg (recommended for better audio processing)
 
-### 5. Model Info
-```
-GET /models/info
-```
-**Response:**
-```
-{
-  "model_type": "RandomForestClassifier",
-  "classes": ["happy", "sad", ...],
-  "n_features": 40,
-  "trained_on": "RAVDESS",
-  "feature_type": "MFCC (mean, 40 dims)",
-  "scaler": "StandardScaler"
-}
-```
+### Installation Steps
+1. Clone the repository or download the source code
 
-### 6. Health Check
-```
-GET /health
-```
-**Response:** `{ "status": "ok" }`
-
----
-
-## 🧪 Example API Calls
-
-**Audio Prediction (curl):**
-```
-curl -X POST -F "file=@audio.wav" http://localhost:5000/predict
-```
-
-**Real-time (Base64) Prediction (curl):**
-```
-curl -X POST -H "Content-Type: application/json" -d '{"audio": "data:audio/wav;base64,<BASE64_STRING>"}' http://localhost:5000/record
-```
-
-**Get History:**
-```
-curl http://localhost:5000/history
-```
-
-**Download PDF Report:**
-```
-curl -O http://localhost:5000/download-report/your_audio.wav
-```
-
-**Model Info:**
-```
-curl http://localhost:5000/models/info
-```
-
-**Health Check:**
-```
-curl http://localhost:5000/health
-```
-
----
-
-## 🛠️ How to Run
-
-1. **Install dependencies:**
+2. Install the required dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-2. **Run the backend API:**
+
+3. Run the application:
    ```bash
    python app.py
    ```
-3. **Test endpoints using curl/Postman.**
 
----
+4. Open your web browser and navigate to:
+   ```
+   http://localhost:5000
+   ```
 
-## 📈 Model & Algorithm
-- **Feature Extraction:** MFCC (Mel-frequency cepstral coefficients, mean, 40 dims)
-- **Model:** Random Forest (scikit-learn)
-- **Preprocessing:** StandardScaler
-- **Dataset:** RAVDESS
-- **Alternatives:** SVM, Neural Networks (can be swapped in train_model.py)
+### Optional Configuration
+- For Google Sign-In, create a file at `instance/google_oauth.json` with your OAuth credentials:
+  ```json
+  {"web":{"client_id":"YOUR_ID","client_secret":"YOUR_SECRET"}}
+  ```
 
----
+- To retrain the model with your own data or parameters:
+  ```bash
+  python train_model.py
+  ```
 
-## 🧩 Extending the Backend
-- Add new endpoints for analytics, user management, or batch processing.
-- Swap in new models by retraining and updating the .pkl files.
-- Integrate with any frontend or mobile app via REST API.
-- Add authentication (Flask-JWT, OAuth) for production use.
+### Testing
+- Run the test suite to verify functionality:
+  ```bash
+  python test_app.py
+  ```
 
----
-
-## 📄 License
-MIT License. See LICENSE file.
-
----
-
-**Made for backend-focused audio emotion recognition projects.**
+### Windows Troubleshooting
+- If you encounter Unicode emoji display issues, the app will automatically fall back to ASCII
+- Librosa warnings about 'resampy' are handled internally
+- JSON parsing errors with NaN values are sanitized in history responses
