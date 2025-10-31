@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account - SentiSound</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+    <style>
+        body { font-family:'Inter',sans-serif; background:#1e3a8a; color:#ffffff; }
+        .container { max-width:1100px; margin:0 auto; padding:24px; }
+        .nav { display:flex; justify-content:space-between; align-items:center; background:#1e3a8a; color:#ffffff; padding:10px 12px; border-radius:12px; }
+        .btn { background:#FFFFFF; color:#1e3a8a; border:2px solid #1e3a8a; padding:8px 14px; border-radius:10px; text-decoration:none; }
+        .grid { display:grid; grid-template-columns: 320px 1fr; gap:16px; }
+        .card { background:#fff; border-radius:16px; padding:24px; box-shadow:0 20px 40px rgba(0,0,0,0.1); color:#111827; }
+        .row { display:flex; gap:16px; margin-bottom:12px; align-items:center; }
+        .label { width:140px; color:#6b7280; }
+        input[type="text"], input[type="email"], input[type="date"], textarea { width:100%; padding:10px 12px; border:1px solid #e5e7eb; border-radius:10px; }
+        textarea { min-height:90px; resize:vertical; }
+        .avatar-wrap { display:flex; flex-direction:column; align-items:center; gap:12px; }
+        .avatar { width:120px; height:120px; border-radius:50%; object-fit:cover; border:3px solid #e5e7eb; background:#f8fafc; display:flex; align-items:center; justify-content:center; font-size:56px; }
+        .emoji-row { display:grid; grid-template-columns: repeat(6, 1fr); gap:8px; }
+        .emoji { background:#f8fafc; border:1px solid #e5e7eb; border-radius:10px; padding:6px 0; text-align:center; cursor:pointer; transition:transform .1s ease; }
+        .emoji:hover { transform:translateY(-2px); box-shadow:0 8px 20px rgba(0,0,0,0.06); }
+        .muted { color:#6b7280; font-size:0.9rem; }
+        .save { background:#1e3a8a; color:#fff; border:none; padding:10px 16px; border-radius:10px; cursor:pointer; }
+        @media (max-width: 900px){ .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a class="btn" href="/home">Home</a>
+        <a class="btn" href="/analyze">Analyze</a>
+        <a class="btn" href="/history-page">History</a>
+        <a class="btn" href="/account">Account</a>
+      </div>
+      <a class="btn" href="/logout">Logout</a>
+    </div>
+
+    <form class="grid" method="POST" enctype="multipart/form-data">
+      <!-- Left: Profile card -->
+      <div class="card">
+        <div class="avatar-wrap">
+          <div id="avatarPreview" class="avatar">
+            <span id="avatarEmoji">{{ '😐' }}</span>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-weight:700;">{{ user.name or 'Your Name' }}</div>
+            <div class="muted">{{ user.email }}</div>
+            <div class="muted">Provider: {{ user.provider }}</div>
+          </div>
+          <div style="width:100%;">
+            <label class="muted" style="display:block; margin-bottom:6px;">Upload photo</label>
+            <input type="file" name="avatar" accept="image/*" style="width:100%;">
+          </div>
+          <div style="width:100%; margin-top:10px;">
+            <div class="muted" style="margin-bottom:6px;">Or choose an emoji avatar</div>
+            <div class="emoji-row" id="emojiRow">
+              <div class="emoji">😄</div>
+              <div class="emoji">😎</div>
+              <div class="emoji">🤖</div>
+              <div class="emoji">🎧</div>
+              <div class="emoji">🧠</div>
+              <div class="emoji">🔥</div>
+              <div class="emoji">🌟</div>
+              <div class="emoji">🎵</div>
+              <div class="emoji">💡</div>
+              <div class="emoji">🚀</div>
+              <div class="emoji">🐼</div>
+              <div class="emoji">🦄</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Details form -->
+      <div class="card">
+        <h2 style="margin-top:0;">Profile Details</h2>
+        <div class="row"><div class="label">Name</div><input type="text" name="name" value="{{ user.name or '' }}" placeholder="Your full name"></div>
+        <div class="row"><div class="label">Phone</div><input type="text" name="phone" value="{{ user.phone or '' }}" placeholder="+91 9876543210"></div>
+        <div class="row"><div class="label">Location</div><input type="text" name="location" placeholder="City, Country"></div>
+        <div class="row"><div class="label">Birthday</div><input type="date" name="birthday"></div>
+        <div class="row"><div class="label">Bio</div><textarea name="bio" placeholder="Tell us something about you (not saved yet)"></textarea></div>
+        <div class="row"><div class="label">Preferences</div><input type="text" name="pref" placeholder="e.g., Calm music, Short meditations"></div>
+        <div class="row" style="justify-content:flex-end;"><button class="save" type="submit">Save Changes</button></div>
+        <div class="muted">Note: Additional fields are for personalization and may not be stored yet.</div>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Emoji avatar preview (client-side only)
+    document.addEventListener('DOMContentLoaded', function(){
+      const row = document.getElementById('emojiRow');
+      const emojiEl = document.getElementById('avatarEmoji');
+      if(row){
+        row.querySelectorAll('.emoji').forEach(e => {
+          e.addEventListener('click', () => {
+            emojiEl.textContent = e.textContent;
+          });
+        });
+      }
+    });
+  </script>
+</body>
+</html>
+

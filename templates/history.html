@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentiSound - History</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #1e3a8a; min-height: 100vh; color:#0f172a; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
+        .nav { display:flex; justify-content: space-between; align-items:center; background: #1e3a8a; color:#ffffff; padding:10px 12px; border-radius:12px; }
+        .btn { background:#ffffff; color:#1e3a8a; border:2px solid #1e3a8a; padding:8px 14px; border-radius:10px; text-decoration:none; }
+        .card { background:white; border-radius:16px; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.1); }
+        .history-item { display:flex; justify-content:space-between; align-items:center; padding:14px; border-bottom:1px solid #eee; }
+        .history-item:hover { background:#f8f9fa; }
+        .history-grid { display:grid; grid-template-columns: 1fr; gap:12px; }
+        .filename { color:#555; font-size:0.9rem; }
+        .emoji { margin-right:8px; font-size:1.2rem; }
+    </style>
+</head>
+<body>
+  <div class="container">
+    <div class="nav">
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a class="btn" href="/home">Home</a>
+        <a class="btn" href="/analyze">Analyze</a>
+        <a class="btn" href="/history-page">History</a>
+        <a class="btn" href="/account">Account</a>
+      </div>
+      <a class="btn" href="/logout">Logout</a>
+    </div>
+
+    <div class="card" style="margin-top:12px;">
+      <div id="listView">
+        <h2 style="margin-top:0;">Recent Analysis History</h2>
+        <div id="historyContainer" class="history-grid"></div>
+      </div>
+      <div id="detailView" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h2 style="margin-top:0;">History Detail</h2>
+          <a class="btn" href="/history-page">Back</a>
+        </div>
+        <div id="detailContainer"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadHistoryPage(){
+      try{
+        const res = await fetch('/history');
+        const data = await res.json();
+        const container = document.getElementById('historyContainer');
+        if(!res.ok || !data.history || data.history.length === 0){
+          container.innerHTML = '<div style="padding:10px;color:#666;">No analysis history yet</div>';
+          return;
+        }
+        const items = data.history.map(item => {
+          const ts = new Date(item.formatted_time || item.timestamp).toLocaleString();
+          const conf = (item.confidence * 100).toFixed(1);
+          return `
+            <div class="history-item" onclick="viewDetail('${item.filename}')">
+              <div>
+                <div><span class="emoji">${item.emoji || '😐'}</span><strong>${item.predicted_emotion}</strong> • ${conf}%</div>
+                <div class="filename">${item.filename} • ${ts}</div>
+              </div>
+              <div><i class="fas fa-chevron-right" style="color:#888;"></i></div>
+            </div>
+          `;
+        }).join('');
+        container.innerHTML = items;
+      }catch(e){
+        document.getElementById('historyContainer').innerHTML = '<div style="padding:10px;color:#666;">Failed to load history</div>';
+      }
+    }
+
+    async function viewDetail(filename){
+      const list = document.getElementById('listView');
+      const detail = document.getElementById('detailView');
+      list.style.display = 'none';
+      detail.style.display = 'block';
+      await loadDetail(filename);
+    }
+
+    async function loadDetail(filename){
+      try{
+        const res = await fetch(`/history/${encodeURIComponent(filename)}`);
+        const item = await res.json();
+        const el = document.getElementById('detailContainer');
+        if(!res.ok){
+          el.innerHTML = '<div style="padding:10px;color:#666;">Failed to load details</div>';
+          return;
+        }
+        const ts = new Date(item.formatted_time || item.timestamp).toLocaleString();
+        const conf = (item.confidence * 100).toFixed(1);
+        const probs = Object.entries(item.probabilities || {})
+          .sort((a,b)=>b[1]-a[1])
+          .map(([k,v])=>`<div style="padding:6px 8px;border:1px solid #eee;border-radius:8px;">${k}: ${(v*100).toFixed(1)}%</div>`)
+          .join('');
+        el.innerHTML = `
+          <div style="display:grid; gap:16px;">
+            <div>
+              <div><span class="emoji">${item.emoji || '😐'}</span><strong>${item.predicted_emotion}</strong> • ${conf}%</div>
+              <div class="filename">${item.filename} • ${ts}</div>
+            </div>
+            <div>
+              <h3 style="margin:0 0 8px 0;">Probabilities</h3>
+              <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(140px,1fr)); gap:8px;">${probs}</div>
+            </div>
+            ${item.has_visualization ? `
+            <div>
+              <h3 style="margin:0 0 8px 0;">Visualization</h3>
+              <img src="/static/${item.visualization_path}" style="max-width:100%; border-radius:12px; box-shadow:0 6px 20px rgba(0,0,0,0.1);" />
+            </div>` : ''}
+          </div>
+        `;
+      }catch(e){
+        document.getElementById('detailContainer').innerHTML = '<div style="padding:10px;color:#666;">Failed to load details</div>';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const file = params.get('file');
+      if(file){
+        viewDetail(file);
+      }else{
+        loadHistoryPage();
+      }
+    });
+  </script>
+</body>
+</html>

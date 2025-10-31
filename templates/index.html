@@ -2,50 +2,1486 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SentiSound - Audio Emotion Detection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SentiSound - Analyze</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f7f7f7; }
-        .container { background: #fff; padding: 30px; border-radius: 8px; max-width: 500px; margin: auto; box-shadow: 0 2px 8px #ccc; }
-        h1 { text-align: center; }
-        .result, .error { margin-top: 20px; padding: 15px; border-radius: 5px; }
-        .result { background: #e6ffe6; border: 1px solid #b2ffb2; }
-        .error { background: #ffe6e6; border: 1px solid #ffb2b2; color: #a00; }
-        .prob-table { width: 100%; margin-top: 10px; border-collapse: collapse; }
-        .prob-table th, .prob-table td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
-        .prob-table th { background: #f0f0f0; }
-        .viz-img { margin-top: 15px; max-width: 100%; border-radius: 4px; }
-        .pdf-link { display: inline-block; margin-top: 10px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #1e3a8a;
+            min-height: 100vh;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .upload-section, .recording-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title i {
+            color: #1e3a8a;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #1e3a8a;
+            background: #eef2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #1e3a8a;
+            background: #e6ebff;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #1e3a8a;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e3a8a 0%, #243ea3 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #1e3a8a;
+            color: #FFFFFF;
+            border: 2px solid #1e3a8a;
+        }
+        
+        .btn-secondary:hover {
+            background: #FFFFFF;
+            color: #1e3a8a;
+        }
+
+        .recording-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .record-btn {
+            background: #1e3a8a;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .record-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 20px rgba(220, 53, 69, 0.3);
+        }
+
+        .record-btn.recording {
+            background: #28a745;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .recording-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #f8fafc;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #334155;
+        }
+
+        .status-indicator.recording {
+            background: #dc3545;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .emotion-result {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .emotion-display {
+            display: inline-block;
+            padding: 20px 40px;
+            border-radius: 20px;
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .emotion-happy { background: linear-gradient(135deg, #28a745, #20c997); color: white; }
+        .emotion-sad { background: linear-gradient(135deg, #6c757d, #495057); color: white; }
+        .emotion-angry { background: linear-gradient(135deg, #dc3545, #c82333); color: white; }
+        .emotion-surprised { background: linear-gradient(135deg, #ffc107, #e0a800); color: #212529; }
+        .emotion-fear { background: linear-gradient(135deg, #6f42c1, #5a2d91); color: white; }
+        .emotion-disgust { background: linear-gradient(135deg, #fd7e14, #e55a00); color: white; }
+        .emotion-neutral { background: linear-gradient(135deg, #17a2b8, #138496); color: white; }
+
+        .probabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .probability-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .probability-card.top {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-left-color: #fff;
+        }
+
+        .probability-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .probability-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .visualization-section {
+            margin-top: 30px;
+        }
+
+        .viz-image {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .suggestions-section {
+            background: linear-gradient(135deg, #f8f9ff, #f0f4ff);
+            padding: 25px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+
+        .suggestions-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .suggestion-icon {
+            font-size: 1.5rem;
+            color: #667eea;
+            width: 40px;
+            text-align: center;
+        }
+
+        .suggestion-content h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .suggestion-content p {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+            color: #721c24;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            border-left: 4px solid #dc3545;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .history-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background 0.3s ease;
+        }
+
+        .history-item:hover {
+            background: #f8f9fa;
+        }
+
+        .history-info {
+            flex: 1;
+        }
+
+        .history-emotion {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .history-time {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .probabilities-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .recording-controls {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
-<div class="container">
-    <h1>SentiSound</h1>
-    <form action="/result" method="post" enctype="multipart/form-data">
-        <label for="file">Upload Audio File (.wav, .mp3):</label><br>
-        <input type="file" name="file" id="file" accept="audio/*" required><br><br>
-        <button type="submit">Analyze Emotion</button>
-    </form>
-    {% if error %}
-        <div class="error">{{ error }}</div>
-    {% endif %}
-    {% if result %}
-        <div class="result">
-            <strong>Predicted Emotion:</strong> {{ result.emotion|capitalize }}<br>
-            <strong>Probabilities:</strong>
-            <table class="prob-table">
-                <tr><th>Emotion</th><th>Probability</th></tr>
-                {% for emo, prob in result.probabilities.items() %}
-                <tr><td>{{ emo|capitalize }}</td><td>{{ '%.2f'|format(prob * 100) }}%</td></tr>
-                {% endfor %}
-            </table>
-            {% if result.visualization %}
-                <img src="/static/{{ result.visualization }}" class="viz-img" alt="Visualization">
-            {% endif %}
-            {% if result.pdf_url %}
-                <div><a class="pdf-link" href="{{ result.pdf_url }}">Download PDF Report</a></div>
-            {% endif %}
+    <div class="container">
+        <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px; color: #ffffff; background: #1e3a8a; padding:10px 12px; border-radius:12px;">
+            <div style="display:flex; gap:10px; align-items:center;">
+                <a href="/home" class="btn" style="padding:6px 12px; font-size:0.9rem;">Home</a>
+                <a href="/analyze" class="btn" style="padding:6px 12px; font-size:0.9rem;">Analyze</a>
+                <a href="/history-page" class="btn" style="padding:6px 12px; font-size:0.9rem;">History</a>
+                <a href="/account" class="btn" style="padding:6px 12px; font-size:0.9rem;">Account</a>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <span style="font-size:0.9rem; opacity:0.9;">Welcome</span>
+                <a href="/logout" class="btn btn-secondary" style="padding:6px 12px; font-size:0.9rem;">Logout</a>
+            </div>
         </div>
-    {% endif %}
-</div>
+        <div class="header">
+            <h1><i class="fas fa-microphone-alt"></i> SentiSound</h1>
+            <p>Audio Emotion Detection System</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <h2 class="section-title">
+                    <i class="fas fa-upload"></i>
+                    Upload Audio File
+                </h2>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <div class="upload-text">
+                        Drag & drop your audio file here<br>
+                        or click to browse
+                    </div>
+                    <div style="font-size: 0.9rem; color: #999; margin-top: 10px;">
+                        Supported formats: .wav, .mp3
+                    </div>
+                </div>
+                
+                <input type="file" id="fileInput" class="file-input" accept="audio/*">
+                <button class="btn" onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i>
+                    Choose File
+                </button>
+            </div>
+
+            <!-- Recording Section -->
+            <div class="recording-section">
+                <h2 class="section-title">
+                    <i class="fas fa-microphone"></i>
+                    Record Audio
+                </h2>
+                
+                <div class="recording-status" id="recordingStatus">
+                    <div class="status-indicator" id="statusIndicator"></div>
+                    <span id="statusText">Ready to record</span>
+                </div>
+                
+                <div class="recording-controls">
+                    <button class="btn record-btn" id="recordBtn" onclick="toggleRecording()">
+                        <i class="fas fa-microphone" id="recordIcon"></i>
+                    </button>
+                    <button class="btn btn-secondary" onclick="stopRecording()" id="stopBtn" disabled>
+                        <i class="fas fa-stop"></i>
+                        Stop Recording
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn btn-secondary" onclick="testRecording()" style="font-size: 0.9rem; padding: 8px 16px;">
+                        <i class="fas fa-play"></i>
+                        Test Recording (3s)
+                    </button>
+                </div>
+                
+                <div id="recordingTimer" style="text-align: center; font-size: 1.2rem; font-weight: 600; color: #dc3545; display: none;">
+                    00:00
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Section -->
+        <div class="loading" id="loadingSection">
+            <div class="spinner"></div>
+            <p>Analyzing your audio...</p>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="emotion-result">
+                <div class="emotion-display" id="emotionDisplay">
+                    <span id="emotionEmoji"></span>
+                    <span id="emotionText"></span>
+                </div>
+                <p id="confidenceText"></p>
+            </div>
+
+            <div class="probabilities-grid" id="probabilitiesGrid"></div>
+
+            <div class="visualization-section" id="visualizationSection">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Audio Analysis
+                </h3>
+                <img id="vizImage" class="viz-image" alt="Audio Analysis">
+            </div>
+
+            <div class="suggestions-section" id="suggestionsSection">
+                <h3 class="suggestions-title">
+                    <i class="fas fa-lightbulb"></i>
+                    Personalized Suggestions
+                </h3>
+                <div id="suggestionsContent"></div>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <div class="download-section">
+                    <h3 class="section-title" style="margin-bottom: 15px;">
+                        <i class="fas fa-file-pdf"></i>
+                        Download Comprehensive Report
+                    </h3>
+                    <p style="color: #666; margin-bottom: 20px; font-size: 0.9rem;">
+                        Get a detailed PDF report with all analysis results, technical details, and personalized recommendations
+                    </p>
+                    <button class="btn btn-primary" onclick="downloadReport()" id="downloadBtn">
+                    <i class="fas fa-download"></i>
+                        📄 Download Full PDF Report
+                </button>
+                    <p style="color: #999; margin-top: 10px; font-size: 0.8rem;">
+                        Includes: Emotion analysis, probabilities, technical details, visualizations, and recommendations
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        
+        
+        <!-- History Detail Modal -->
+        <div id="historyModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="historyDetailContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 SentiSound - Audio Emotion Detection</p>
+        </div>
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordingTimer;
+        let recordingStartTime;
+        let currentAudioFile = null;
+
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFileUpload(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFileUpload(e.target.files[0]);
+            }
+        });
+
+        function handleFileUpload(file) {
+            if (!file.type.startsWith('audio/')) {
+                showError('Please select a valid audio file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            showLoading();
+            analyzeAudio(formData);
+        }
+
+        // Recording functionality
+        async function toggleRecording() {
+            if (!isRecording) {
+                await startRecording();
+            } else {
+                stopRecording();
+            }
+        }
+
+        async function startRecording() {
+            try {
+                console.log('Requesting microphone access...');
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        sampleRate: 22050,
+                        channelCount: 1,
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    } 
+                });
+                console.log('Microphone access granted');
+                
+                // Try different MIME types for better compatibility
+                const mimeTypes = [
+                    'audio/webm;codecs=opus',
+                    'audio/webm',
+                    'audio/mp4',
+                    'audio/wav',
+                    'audio/ogg;codecs=opus'
+                ];
+                
+                let selectedMimeType = null;
+                for (const mimeType of mimeTypes) {
+                    if (MediaRecorder.isTypeSupported(mimeType)) {
+                        selectedMimeType = mimeType;
+                        console.log('Selected MIME type:', selectedMimeType);
+                        break;
+                    }
+                }
+                
+                if (!selectedMimeType) {
+                    throw new Error('No supported audio format found');
+                }
+                
+                mediaRecorder = new MediaRecorder(stream, { mimeType: selectedMimeType });
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    console.log('Data available:', event.data);
+                    console.log('Data type:', event.data.type);
+                    console.log('Data size:', event.data.size);
+                    audioChunks.push(event.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    console.log('Recording stopped, processing audio...');
+                    console.log('Total chunks:', audioChunks.length);
+                    console.log('Total size:', audioChunks.reduce((acc, chunk) => acc + chunk.size, 0));
+                    
+                    // Check if we have enough audio data
+                    const totalSize = audioChunks.reduce((acc, chunk) => acc + chunk.size, 0);
+                    const recordingDuration = (Date.now() - recordingStartTime) / 1000;
+                    
+                    console.log('Recording duration:', recordingDuration, 'seconds');
+                    console.log('Total audio size:', totalSize, 'bytes');
+                    
+                    if (recordingDuration < 1.0) {
+                        showError('Recording too short. Please record for at least 1 second.');
+                        document.getElementById('statusText').textContent = 'Ready to record';
+                        return;
+                    }
+                    
+                    if (totalSize < 1000) {
+                        showError('Recording too small. Please try recording again.');
+                        document.getElementById('statusText').textContent = 'Ready to record';
+                        return;
+                    }
+                    
+                    // Create blob with the recorded MIME type
+                    const audioBlob = new Blob(audioChunks, { type: selectedMimeType });
+                    console.log('Audio blob created:', audioBlob);
+                    console.log('Audio blob type:', audioBlob.type);
+                    console.log('Audio blob size:', audioBlob.size);
+                    
+                    // Convert to WAV format for better compatibility
+                    const wavBlob = await convertToWav(audioBlob);
+                    console.log('Final WAV blob:', wavBlob);
+                    console.log('Final WAV size:', wavBlob.size);
+                    
+                    const formData = new FormData();
+                    formData.append('audio', wavBlob);
+                    
+                    showLoading();
+                    analyzeRecording(formData);
+                };
+
+                console.log('Starting MediaRecorder...');
+                mediaRecorder.start(1000); // Collect data every second
+                isRecording = true;
+                
+                // Update UI
+                document.getElementById('recordBtn').classList.add('recording');
+                document.getElementById('recordIcon').className = 'fas fa-stop';
+                document.getElementById('statusIndicator').classList.add('recording');
+                document.getElementById('statusText').textContent = 'Recording...';
+                document.getElementById('stopBtn').disabled = false;
+                
+                // Start timer
+                recordingStartTime = Date.now();
+                document.getElementById('recordingTimer').style.display = 'block';
+                updateRecordingTimer();
+                
+            } catch (error) {
+                console.error('Error in startRecording:', error);
+                showError('Error accessing microphone: ' + error.message);
+            }
+        }
+
+        function stopRecording() {
+            console.log('stopRecording called');
+            if (mediaRecorder && isRecording) {
+                console.log('Stopping MediaRecorder...');
+                mediaRecorder.stop();
+                mediaRecorder.stream.getTracks().forEach(track => {
+                    console.log('Stopping track:', track);
+                    track.stop();
+                });
+                isRecording = false;
+                
+                // Update UI
+                document.getElementById('recordBtn').classList.remove('recording');
+                document.getElementById('recordIcon').className = 'fas fa-microphone';
+                document.getElementById('statusIndicator').classList.remove('recording');
+                document.getElementById('statusText').textContent = 'Processing...';
+                document.getElementById('stopBtn').disabled = true;
+                document.getElementById('recordingTimer').style.display = 'none';
+                
+                clearInterval(recordingTimer);
+            } else {
+                console.log('No active recording to stop');
+            }
+        }
+
+        function updateRecordingTimer() {
+            recordingTimer = setInterval(() => {
+                const elapsed = Date.now() - recordingStartTime;
+                const seconds = Math.floor(elapsed / 1000);
+                const minutes = Math.floor(seconds / 60);
+                const remainingSeconds = seconds % 60;
+                document.getElementById('recordingTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        // Test recording function
+        async function testRecording() {
+            try {
+                console.log('Starting test recording...');
+                
+                // Request microphone access
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    audio: {
+                        sampleRate: 22050,
+                        channelCount: 1,
+                        echoCancellation: true,
+                        noiseSuppression: true
+                    } 
+                });
+                
+                // Create MediaRecorder
+                const testRecorder = new MediaRecorder(stream);
+                const testChunks = [];
+                
+                testRecorder.ondataavailable = (event) => {
+                    testChunks.push(event.data);
+                };
+                
+                testRecorder.onstop = async () => {
+                    console.log('Test recording stopped');
+                    
+                    // Stop all tracks
+                    stream.getTracks().forEach(track => track.stop());
+                    
+                    if (testChunks.length === 0) {
+                        showError('Test recording failed - no audio data captured');
+                        return;
+                    }
+                    
+                    const testBlob = new Blob(testChunks, { type: 'audio/webm' });
+                    console.log('Test recording blob:', testBlob);
+                    console.log('Test recording size:', testBlob.size);
+                    
+                    if (testBlob.size < 1000) {
+                        showError('Test recording too small - microphone may not be working');
+                        return;
+                    }
+                    
+                    showSuccess('Test recording successful! Microphone is working properly.');
+                    console.log('Test recording completed successfully');
+                };
+                
+                // Start recording for 3 seconds
+                testRecorder.start();
+                console.log('Test recording started');
+                
+                // Stop after 3 seconds
+                setTimeout(() => {
+                    if (testRecorder.state === 'recording') {
+                        testRecorder.stop();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Test recording error:', error);
+                showError('Test recording failed: ' + error.message);
+            }
+        }
+
+        // Audio analysis
+        async function analyzeAudio(formData) {
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResults(result);
+                    currentAudioFile = result.audio_file;
+                    loadHistory();
+                } else {
+                    showError(result.error || 'Analysis failed');
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        async function analyzeRecording(formData) {
+            try {
+                const audioBlob = formData.get('audio');
+                console.log('Audio blob:', audioBlob);
+                console.log('Audio blob type:', audioBlob.type);
+                console.log('Audio blob size:', audioBlob.size);
+                
+                if (!audioBlob || audioBlob.size === 0) {
+                    showError('No audio data to analyze');
+                    return;
+                }
+                
+                const base64Audio = await blobToBase64(audioBlob);
+                console.log('Base64 audio length:', base64Audio.length);
+                
+                // Update status
+                document.getElementById('statusText').textContent = 'Analyzing audio...';
+                
+                const response = await fetch('/record', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        audio: base64Audio
+                    })
+                });
+                
+                console.log('Response status:', response.status);
+                const result = await response.json();
+                console.log('Response result:', result);
+                
+                if (response.ok) {
+                    displayResults(result);
+                    // Auto-append audio playback of uploaded/recorded file
+                    if (result.audio_file) {
+                        const audioEl = document.createElement('audio');
+                        audioEl.controls = true;
+                        audioEl.src = '/static/audio_uploads/' + result.audio_file;
+                        audioEl.style.marginTop = '10px';
+                        document.getElementById('visualizationSection').appendChild(audioEl);
+                    }
+                    currentAudioFile = result.audio_file;
+                    
+                    // Refresh history to show the new recording
+                    setTimeout(() => {
+                    loadHistory();
+                    }, 1000);
+                    
+                    document.getElementById('statusText').textContent = 'Analysis complete!';
+                } else {
+                    const errorMsg = result.error || 'Analysis failed';
+                    console.error('Server error:', errorMsg);
+                    showError(errorMsg);
+                    document.getElementById('statusText').textContent = 'Analysis failed';
+                }
+            } catch (error) {
+                console.error('Error in analyzeRecording:', error);
+                showError('Network error: ' + error.message);
+                document.getElementById('statusText').textContent = 'Network error';
+            } finally {
+                hideLoading();
+                setTimeout(() => {
+                document.getElementById('statusText').textContent = 'Ready to record';
+                }, 3000);
+            }
+        }
+
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        }
+        
+        // Convert audio to WAV format if needed
+        async function convertToWav(audioBlob) {
+            try {
+                // If it's already WAV, return as is
+                if (audioBlob.type === 'audio/wav') {
+                    return audioBlob;
+                }
+                
+                console.log('Converting audio from', audioBlob.type, 'to WAV format...');
+                
+                // Create an audio context to convert the audio
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                // Convert to WAV
+                const wavBlob = audioBufferToWav(audioBuffer);
+                console.log('Conversion successful, WAV size:', wavBlob.size);
+                
+                return wavBlob;
+            } catch (error) {
+                console.error('Error converting to WAV:', error);
+                // Return original blob if conversion fails
+                return audioBlob;
+            }
+        }
+        
+        // Helper function to convert AudioBuffer to WAV
+        function audioBufferToWav(buffer) {
+            const length = buffer.length;
+            const numberOfChannels = buffer.numberOfChannels;
+            const sampleRate = buffer.sampleRate;
+            const arrayBuffer = new ArrayBuffer(44 + length * numberOfChannels * 2);
+            const view = new DataView(arrayBuffer);
+            
+            // WAV header
+            const writeString = (offset, string) => {
+                for (let i = 0; i < string.length; i++) {
+                    view.setUint8(offset + i, string.charCodeAt(i));
+                }
+            };
+            
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + length * numberOfChannels * 2, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numberOfChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numberOfChannels * 2, true);
+            view.setUint16(32, numberOfChannels * 2, true);
+            view.setUint16(34, 16, true);
+            writeString(36, 'data');
+            view.setUint32(40, length * numberOfChannels * 2, true);
+            
+            // Convert audio data
+            let offset = 44;
+            for (let i = 0; i < length; i++) {
+                for (let channel = 0; channel < numberOfChannels; channel++) {
+                    const sample = Math.max(-1, Math.min(1, buffer.getChannelData(channel)[i]));
+                    view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7FFF, true);
+                    offset += 2;
+                }
+            }
+            
+            return new Blob([arrayBuffer], { type: 'audio/wav' });
+        }
+
+        // Display results
+        function displayResults(result) {
+            const emotion = result.emotion;
+            const probabilities = result.probabilities;
+            
+            // Update emotion display
+            const emotionConfig = getEmotionConfig(emotion);
+            document.getElementById('emotionEmoji').textContent = emotionConfig.emoji;
+            document.getElementById('emotionText').textContent = ' ' + emotion.charAt(0).toUpperCase() + emotion.slice(1);
+            document.getElementById('emotionDisplay').className = `emotion-display emotion-${emotion}`;
+            
+            // Update confidence
+            const maxProb = Math.max(...Object.values(probabilities));
+            document.getElementById('confidenceText').textContent = 
+                `Confidence: ${(maxProb * 100).toFixed(1)}%`;
+            
+            // Update probabilities grid
+            const probabilitiesGrid = document.getElementById('probabilitiesGrid');
+            probabilitiesGrid.innerHTML = '';
+            
+            const sortedProbs = Object.entries(probabilities)
+                .sort(([,a], [,b]) => b - a);
+            
+            sortedProbs.forEach(([emotionName, prob], index) => {
+                const card = document.createElement('div');
+                card.className = `probability-card ${index === 0 ? 'top' : ''}`;
+                card.innerHTML = `
+                    <div class="probability-value">${(prob * 100).toFixed(1)}%</div>
+                    <div class="probability-label">${emotionName.charAt(0).toUpperCase() + emotionName.slice(1)}</div>
+                `;
+                probabilitiesGrid.appendChild(card);
+            });
+            
+            // Update visualization
+            if (result.visualization) {
+                document.getElementById('vizImage').src = '/static/' + result.visualization;
+                document.getElementById('visualizationSection').style.display = 'block';
+            }
+            
+            // Update suggestions
+            updateSuggestions(emotion);
+            
+            // Show results
+            document.getElementById('resultsSection').style.display = 'block';
+            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function getEmotionConfig(emotion) {
+            const configs = {
+                'happy': { emoji: '😄', color: '#28a745' },
+                'sad': { emoji: '😢', color: '#6c757d' },
+                'angry': { emoji: '😠', color: '#dc3545' },
+                'surprised': { emoji: '😮', color: '#ffc107' },
+                'fear': { emoji: '😨', color: '#6f42c1' },
+                'disgust': { emoji: '🤢', color: '#fd7e14' },
+                'neutral': { emoji: '😐', color: '#17a2b8' }
+            };
+            return configs[emotion] || configs['neutral'];
+        }
+
+        function updateSuggestions(emotion) {
+            const suggestions = getEmotionSuggestions(emotion);
+            const content = document.getElementById('suggestionsContent');
+            
+            content.innerHTML = `
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-music"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <h4>Recommended Music</h4>
+                        <p><a href="${suggestions.music_url}" target="_blank">${suggestions.music}</a></p>
+                    </div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <h4>Activity Suggestion</h4>
+                        <p><a href="${suggestions.activity_url}" target="_blank">${suggestions.activity}</a></p>
+                    </div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-om"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <h4>Meditation Tip</h4>
+                        <p><a href="${suggestions.meditation_url}" target="_blank">${suggestions.meditation}</a></p>
+                    </div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="suggestion-content">
+                        <h4>Book Suggestion</h4>
+                        <p>${suggestions.book}</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function getEmotionSuggestions(emotion) {
+            const suggestions = {
+                'happy': {
+                    music: 'Happy Hits – Upbeat Pop Mix',
+                    music_url: 'https://www.youtube.com/playlist?list=PLMC9KNkIncKseYxDN2niH6glGRWKsLtde',
+                    activity: 'Quick energizing workout (10–15 min)',
+                    activity_url: 'https://www.youtube.com/watch?v=UBMk30rjy0o',
+                    meditation: 'Gratitude practice (5–10 min)',
+                    meditation_url: 'https://www.youtube.com/watch?v=WPPPFqsECz0',
+                    book: 'The Happiness Advantage – Shawn Achor'
+                },
+                'sad': {
+                    music: 'Cheerful Uplifting Songs',
+                    music_url: 'https://www.youtube.com/playlist?list=PLgG8bm3T8oE2K8w2oYj2vuw9S1qQxVwQh',
+                    activity: 'Go for a 15‑minute walk or call a friend',
+                    activity_url: 'https://www.youtube.com/watch?v=I50ZAs2bU9I',
+                    meditation: 'Self‑compassion meditation (10 min)',
+                    meditation_url: 'https://www.youtube.com/watch?v=Z9A3QnH8V7c',
+                    book: 'Feeling Good – David D. Burns'
+                },
+                'angry': {
+                    music: 'Calming Ambient Sounds',
+                    music_url: 'https://www.youtube.com/watch?v=1ZYbU82GVz4',
+                    activity: 'Box breathing 4‑4‑4‑4 (5 min) + journaling',
+                    activity_url: 'https://www.youtube.com/watch?v=tEmt1Znux58',
+                    meditation: 'Anger release (10 min)',
+                    meditation_url: 'https://www.youtube.com/watch?v=aGx4IlppSgU',
+                    book: 'The Dance of Anger – Harriet Lerner'
+                },
+                'surprised': {
+                    music: 'Feel‑good Jazz Vibes',
+                    music_url: 'https://www.youtube.com/playlist?list=PL1Z0x4QJQJ4o9Zz3e1l2QJld7Yv9gk3Zc',
+                    activity: 'Channel your energy into a creative sketch (10–15 min)',
+                    activity_url: 'https://www.youtube.com/watch?v=qZ2rYk4LLxU',
+                    meditation: 'Open awareness (5–10 min)',
+                    meditation_url: 'https://www.youtube.com/watch?v=Yc5TlrC_z5E',
+                    book: 'Range – David Epstein'
+                },
+                'fear': {
+                    music: 'Soft Piano for Anxiety Relief',
+                    music_url: 'https://www.youtube.com/watch?v=KTo_6Q5wGgc',
+                    activity: 'Grounding 5‑4‑3‑2‑1 (3–5 min)',
+                    activity_url: 'https://www.youtube.com/watch?v=Fs8Gk9WnJvk',
+                    meditation: 'Anxiety relief (10 min)',
+                    meditation_url: 'https://www.youtube.com/watch?v=O-6f5wQXSu8',
+                    book: 'Feel the Fear and Do It Anyway – Susan Jeffers'
+                },
+                'disgust': {
+                    music: 'Nature Ambience (Forest/Water)',
+                    music_url: 'https://www.youtube.com/watch?v=tq3m-r1qU8s',
+                    activity: 'Declutter a small area (10–15 min)',
+                    activity_url: 'https://www.youtube.com/watch?v=4xgZ-q1AO5I',
+                    meditation: 'Cleansing breath practice (5 min)',
+                    meditation_url: 'https://www.youtube.com/watch?v=RZ3S9XQjcxE',
+                    book: 'Atomic Habits – James Clear'
+                },
+                'neutral': {
+                    music: 'Instrumental Focus (Lo‑fi/Chillhop)',
+                    music_url: 'https://www.youtube.com/watch?v=5qap5aO4i9A',
+                    activity: 'Plan your next goal (10 min)',
+                    activity_url: 'https://www.youtube.com/watch?v=H14bBuluwB8',
+                    meditation: '5‑minute reset',
+                    meditation_url: 'https://www.youtube.com/watch?v=inpok4MKVLM',
+                    book: 'Deep Work – Cal Newport'
+                }
+            };
+            return suggestions[emotion] || suggestions['neutral'];
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loadingSection').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingSection').style.display = 'none';
+        }
+
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(errorDiv, container.firstChild);
+            
+            setTimeout(() => {
+                errorDiv.remove();
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(successDiv, container.firstChild);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 5000);
+        }
+
+        async function loadHistory() {
+            try {
+                const response = await fetch('/history');
+                const data = await response.json();
+                
+                if (response.ok && data.history) {
+                    displayHistory(data.history);
+                } else {
+                    console.error('Failed to load history:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading history:', error);
+            }
+        }
+
+        function displayHistory(history) {
+            const container = document.getElementById('historyContent');
+            
+            if (!history || history.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No analysis history yet</p>';
+                return;
+            }
+            
+            const historyHTML = history.map((item, index) => {
+                const timestamp = new Date(item.formatted_time || item.timestamp).toLocaleString();
+                const confidence = (item.confidence * 100).toFixed(1);
+                
+                // Get top 3 probabilities for display
+                const sortedProbs = Object.entries(item.probabilities || {})
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 3);
+                
+                const probabilitiesHTML = sortedProbs.map(([emotion, prob], idx) => {
+                    const isTop = idx === 0;
+                    return `
+                        <div class="history-probability-item ${isTop ? 'top' : ''}">
+                            <div class="history-probability-value">${(prob * 100).toFixed(1)}%</div>
+                            <div class="history-probability-label">${emotion}</div>
+                    </div>
+                    `;
+                }).join('');
+                
+                return `
+                    <div class="history-item" onclick="showHistoryDetail('${item.filename}')">
+                        <div class="history-item-header">
+                            <div class="history-emotion">
+                                <span class="history-emotion-emoji">${item.emoji || '😐'}</span>
+                                <span>${item.predicted_emotion}</span>
+                    </div>
+                            <div class="history-confidence">${confidence}%</div>
+                </div>
+                        <div class="history-filename">${item.filename}</div>
+                        <div class="history-time">${timestamp}</div>
+                        <div class="history-probabilities">
+                            ${probabilitiesHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = historyHTML;
+        }
+        
+        // Show detailed history information in modal
+        async function showHistoryDetail(filename) {
+            try {
+                const response = await fetch(`/history/${filename}`);
+                const item = await response.json();
+                
+                if (response.ok) {
+                    displayHistoryDetail(item);
+                    document.getElementById('historyModal').style.display = 'block';
+                } else {
+                    showError('Failed to load history details');
+                }
+            } catch (error) {
+                console.error('Error loading history detail:', error);
+                showError('Error loading history details');
+            }
+        }
+        
+        function displayHistoryDetail(item) {
+            const content = document.getElementById('historyDetailContent');
+            const timestamp = new Date(item.formatted_time || item.timestamp).toLocaleString();
+            const confidence = (item.confidence * 100).toFixed(1);
+            
+            // Sort all probabilities
+            const sortedProbs = Object.entries(item.probabilities || {})
+                .sort(([,a], [,b]) => b - a);
+            
+            const probabilitiesHTML = sortedProbs.map(([emotion, prob], idx) => {
+                const isTop = idx === 0;
+                return `
+                    <div class="history-probability-item ${isTop ? 'top' : ''}">
+                        <div class="history-probability-value">${(prob * 100).toFixed(1)}%</div>
+                        <div class="history-probability-label">${emotion}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            const suggestions = getEmotionSuggestions(item.predicted_emotion || 'neutral');
+
+            content.innerHTML = `
+                <h2 style="color: #333; margin-bottom: 20px;">
+                    <span style="font-size: 2rem; margin-right: 15px;">${item.emoji || '😐'}</span>
+                    ${item.predicted_emotion.charAt(0).toUpperCase() + item.predicted_emotion.slice(1)} Emotion Analysis
+                </h2>
+                
+                <div style="margin-bottom: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <strong>File:</strong> ${item.filename}
+                        </div>
+                        <div class="history-confidence">${confidence}% Confidence</div>
+                    </div>
+                    <div style="color: #666;">
+                        <strong>Analyzed:</strong> ${timestamp}
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 25px;">
+                    <h3 style="color: #333; margin-bottom: 15px;">📊 All Emotion Probabilities</h3>
+                    <div class="history-probabilities" style="grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));">
+                        ${probabilitiesHTML}
+                    </div>
+                </div>
+                
+                ${item.has_visualization ? `
+                    <div style="margin-bottom: 25px;">
+                        <h3 style="color: #333; margin-bottom: 15px;">📈 Analysis Visualizations</h3>
+                        <img src="/static/${item.visualization_path}" alt="Audio Analysis" style="max-width: 100%; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    </div>
+                ` : ''}
+
+                <div class="suggestions-section" style="margin-top: 20px;">
+                    <h3 class="suggestions-title"><i class="fas fa-lightbulb"></i> Personalized Suggestions</h3>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon"><i class="fas fa-music"></i></div>
+                        <div class="suggestion-content">
+                            <h4>Recommended Music</h4>
+                            <p><a href="${suggestions.music_url}" target="_blank">${suggestions.music}</a></p>
+                        </div>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon"><i class="fas fa-heart"></i></div>
+                        <div class="suggestion-content">
+                            <h4>Activity Suggestion</h4>
+                            <p><a href="${suggestions.activity_url}" target="_blank">${suggestions.activity}</a></p>
+                        </div>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon"><i class="fas fa-om"></i></div>
+                        <div class="suggestion-content">
+                            <h4>Meditation Tip</h4>
+                            <p><a href="${suggestions.meditation_url}" target="_blank">${suggestions.meditation}</a></p>
+                    </div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon"><i class="fas fa-book"></i></div>
+                    <div class="suggestion-content">
+                        <h4>Book Suggestion</h4>
+                        <p>${suggestions.book}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-primary" onclick="downloadReportFromHistory('${item.filename}')">
+                        <i class="fas fa-download"></i>
+                        Download Full Report
+                    </button>
+                </div>
+            `;
+        }
+        
+        // Download report from history
+        function downloadReportFromHistory(filename) {
+            const downloadUrl = `/download-report/${filename}`;
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = `sentisound_comprehensive_report_${filename}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showSuccess('Report download started! Check your downloads folder.');
+        }
+        
+        // Clear history
+        function clearHistory() {
+            if (confirm('Are you sure you want to clear all analysis history? This action cannot be undone.')) {
+                // Clear the display
+                document.getElementById('historyContent').innerHTML = '<p style="text-align: center; color: #666;">No analysis history yet</p>';
+                showSuccess('History cleared successfully!');
+            }
+        }
+
+        function downloadReport() {
+            if (currentAudioFile) {
+                // Show loading state
+                const downloadBtn = document.getElementById('downloadBtn');
+                const originalText = downloadBtn.innerHTML;
+                downloadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating Report...';
+                downloadBtn.disabled = true;
+                
+                // Download the report
+                const downloadUrl = `/download-report/${currentAudioFile}`;
+                const link = document.createElement('a');
+                link.href = downloadUrl;
+                link.download = `sentisound_comprehensive_report_${currentAudioFile}.pdf`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                // Reset button after a short delay
+                setTimeout(() => {
+                    downloadBtn.innerHTML = originalText;
+                    downloadBtn.disabled = false;
+                    
+                    // Show success message
+                    showSuccess('Report downloaded successfully! Check your downloads folder.');
+                }, 2000);
+            } else {
+                showError('No audio file analyzed yet. Please analyze an audio file first.');
+            }
+        }
+        
+        function showSuccess(message) {
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(successDiv, container.firstChild);
+            
+            setTimeout(() => {
+                successDiv.remove();
+            }, 5000);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Modal event handlers
+            const modal = document.getElementById('historyModal');
+            const closeBtn = document.querySelector('.close');
+            
+            // Close modal when clicking X
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+            
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && modal.style.display === 'block') {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html> 
